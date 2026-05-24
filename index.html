@@ -564,7 +564,7 @@ function qAngles(){
   if(df===2){
     if(t===0){const a=R(25,155),ans=180-a;return{q:`Find the missing angle on the straight line.`,a:`${ans}°`,d:dStraightLine(a),w:[`${ans+10}°`,`${ans-10}°`,`${360-a}°`,`${a}°`].filter(x=>+x>0)};}
     if(t===1){const a=R(35,80),b=R(25,180-a-25),ans=180-a-b;return{q:`Find the missing angle in this triangle.`,a:`${ans}°`,d:dTriangleAngles(a,b),w:[`${ans+10}°`,`${ans-10}°`,`${a+b}°`,`${360-a-b}°`]};}
-    if(t===2){const set=[[45,'Acute'],[90,'Right'],[120,'Obtuse'],[180,'Straight'],[250,'Reflex'],[35,'Acute'],[145,'Obtuse']][R(0,6)];const[angle,atype]=set;return{q:`What type of angle is this?`,a:atype,d:dAngle(angle),opts:shuffle(['Acute','Right','Obtuse','Reflex'])};}
+    if(t===2){const set=[[45,'Acute'],[90,'Right'],[120,'Obtuse'],[180,'Straight'],[250,'Reflex'],[35,'Acute'],[145,'Obtuse']][R(0,6)];const[angle,atype]=set;const all=['Acute','Right','Obtuse','Straight','Reflex'];return{q:`What type of angle is this?`,a:atype,d:dAngle(angle),opts:shuffle([atype,...shuffle(all.filter(x=>x!==atype)).slice(0,3)])};}
     if(t===3){const a=R(30,150);return{q:`Find the vertically opposite angle marked ?.`,a:`${a}°`,d:dVerticallyOpposite(a),w:[`${180-a}°`,`${a+10}°`,`${a-10}°`,`${360-a}°`]};}
     const a=R(35,145),ans=180-a;return{q:`Find the missing co-interior angle marked ?.`,a:`${ans}°`,d:dCoInterior(a),w:[`${a}°`,`${ans+10}°`,`${ans-10}°`,`${360-a}°`]};
   }
@@ -579,7 +579,7 @@ function qAngles(){
     return{q:`Three angles of a quadrilateral are ${a}°, ${b}°, and ${c}°. Find the fourth.`,a:`${ans}°`,w:[`${ans+10}°`,`${ans-10}°`,`${360-a-b}°`,`${180-ans}°`]};
   }
   // Genius: isosceles triangle, simultaneous angle equations, combined parallel lines
-  if(t===0){const base=R(30,70),equal=(180-base)/2;if(!Number.isInteger(equal))return qAngles();return{q:`An isosceles triangle has a base angle of ${base}°. Find the apex angle.`,a:`${2*equal-base+base}°`,w:[`${equal}°`,`${180-base}°`,`${2*base}°`,`${equal+10}°`].filter(x=>x!==`${2*equal-base+base}°`)};}
+  if(t===0){const base=R(20,80),apex=180-2*base;if(apex<=0)return qAngles();return{q:`An isosceles triangle has a base angle of ${base}°. Find the apex angle.`,a:`${apex}°`,w:[`${180-base}°`,`${2*base}°`,`${apex+10}°`,`${apex-10}°`]};}
   if(t===1){const apex=R(20,80),equal=(180-apex)/2;if(!Number.isInteger(equal))return qAngles();return{q:`An isosceles triangle has apex angle ${apex}°. Find each base angle.`,a:`${equal}°`,w:[`${apex}°`,`${equal+10}°`,`${equal-10}°`,`${180-equal}°`]};}
   if(t===2){const sides=R(6,10);const interior=(sides-2)*180/sides;const ext=360/sides;return{q:`A regular ${sides}-gon has interior angles of ${interior}°. What is the sum of ALL interior angles?`,a:`${(sides-2)*180}°`,w:[`${sides*interior-interior}°`,`${(sides-1)*180}°`,`${sides*180}°`,`${(sides-2)*180+interior}°`]};}
   const a=R(25,65);const ans=180-2*a;if(ans<=0)return qAngles();
@@ -892,7 +892,7 @@ function showScreen(id){
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-const VERSION='v24.05.2026.2137';
+const VERSION='v24.05.2026.2143';
 document.getElementById('version').textContent=VERSION;
 renderHome();
 </script>
