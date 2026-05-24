@@ -1,0 +1,899 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maths Practice - Year 7 NZ</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --primary:#6366f1;--success:#22c55e;--error:#ef4444;
+  --bg1:#0f0c29;--bg2:#302b63;--bg3:#24243e;
+  --card:#fffffffa;--text:#1e1b4b;--muted:#6b7280;
+}
+body{
+  font-family:'Segoe UI',system-ui,sans-serif;
+  background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3));
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:20px 16px 40px;
+}
+header{text-align:center;color:#fff;margin-bottom:28px;padding-top:12px}
+header h1{font-size:2.2rem;font-weight:900;letter-spacing:-0.5px}
+header p{opacity:.75;margin-top:4px;font-size:1rem}
+
+.screen{width:100%;max-width:860px;display:none}
+.screen.active{display:block}
+
+/* HOME */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px}
+.topic-card{
+  background:var(--card);border-radius:16px;padding:22px 14px 18px;
+  text-align:center;cursor:pointer;transition:transform .18s,box-shadow .18s;
+  border-top:5px solid #ccc;position:relative;user-select:none;
+}
+.topic-card:hover{transform:translateY(-5px);box-shadow:0 14px 36px #0006}
+.topic-card .icon{font-size:2.2rem;display:block;margin-bottom:10px}
+.topic-card .name{font-weight:700;font-size:.92rem;color:var(--text);line-height:1.3}
+.topic-card .best{font-size:.72rem;color:var(--muted);margin-top:6px;min-height:16px}
+
+/* QUIZ */
+.quiz-box{
+  background:var(--card);border-radius:22px;padding:32px;
+  box-shadow:0 20px 60px #0005;
+}
+.qhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.badge{
+  font-size:.82rem;font-weight:700;padding:5px 13px;
+  border-radius:20px;color:#fff;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis;max-width:55%;
+}
+.scorelabel{font-size:1rem;font-weight:800;color:var(--text)}
+.prog-wrap{background:#e5e7eb;border-radius:8px;height:8px;margin-bottom:28px;overflow:hidden}
+.prog-bar{height:100%;border-radius:8px;background:var(--primary);transition:width .35s ease}
+.qnum{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px}
+.qtext{font-size:1.65rem;font-weight:800;color:var(--text);margin-bottom:28px;line-height:1.35}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.opt-btn{
+  padding:16px 12px;border:2.5px solid #e5e7eb;border-radius:12px;
+  background:#fff;font-size:1.15rem;font-weight:700;cursor:pointer;
+  transition:all .14s;color:var(--text);line-height:1.2;
+}
+.opt-btn:hover:not(:disabled){border-color:var(--primary);background:#eef2ff;transform:scale(1.02)}
+.opt-btn.correct{border-color:var(--success);background:#dcfce7;color:#15803d}
+.opt-btn.wrong{border-color:var(--error);background:#fee2e2;color:#b91c1c}
+.opt-btn:disabled{cursor:default}
+.feedback{text-align:center;margin-top:20px;font-size:1.05rem;font-weight:700;min-height:26px}
+.feedback.ok{color:var(--success)}.feedback.no{color:var(--error)}
+.next-btn{
+  display:none;width:100%;margin-top:20px;padding:15px;
+  background:var(--primary);color:#fff;border:none;border-radius:12px;
+  font-size:1.05rem;font-weight:800;cursor:pointer;transition:opacity .18s,transform .18s;
+}
+.next-btn.show{display:block}
+.next-btn:hover{opacity:.9;transform:scale(1.01)}
+.back-btn{
+  background:none;border:none;color:#fff;font-size:.85rem;
+  cursor:pointer;opacity:.75;margin-bottom:14px;padding:4px 0;
+  display:flex;align-items:center;gap:6px;
+}
+.back-btn:hover{opacity:1}
+
+/* RESULTS */
+.res-box{
+  background:var(--card);border-radius:22px;padding:40px 32px;
+  text-align:center;box-shadow:0 20px 60px #0005;
+}
+.res-title{font-size:1.9rem;font-weight:900;color:var(--text);margin-bottom:6px}
+.res-sub{color:var(--muted);font-size:.95rem;margin-bottom:28px}
+.score-big{font-size:5rem;font-weight:900;color:var(--primary);line-height:1}
+.score-den{font-size:2rem;color:var(--muted)}
+.stars{font-size:2.4rem;margin:16px 0 8px}
+.res-msg{font-size:1.05rem;color:var(--text);margin-bottom:24px}
+.new-best{
+  background:#fef3c7;border:2px solid #f59e0b;color:#92400e;
+  border-radius:10px;padding:8px 18px;font-weight:700;
+  font-size:.9rem;margin-bottom:22px;display:none;
+}
+.res-actions{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{
+  padding:13px 26px;border-radius:12px;font-size:.98rem;
+  font-weight:800;cursor:pointer;transition:all .18s;
+}
+.btn-primary{background:var(--primary);color:#fff;border:none}
+.btn-secondary{background:#fff;color:var(--text);border:2.5px solid #e5e7eb}
+.btn:hover{transform:scale(1.04)}
+
+/* SCORE BREAKDOWN */
+.breakdown{margin-top:24px;text-align:left}
+.breakdown h3{font-size:.85rem;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:10px}
+.q-row{
+  display:flex;align-items:flex-start;gap:10px;padding:8px 0;
+  border-bottom:1px solid #f3f4f6;font-size:.88rem;
+}
+.q-row:last-child{border-bottom:none}
+.q-icon{font-size:1rem;flex-shrink:0;margin-top:1px}
+.q-detail{color:var(--text);flex:1}
+.q-detail strong{display:block;font-weight:700}
+.q-detail span{color:var(--muted);font-size:.82rem}
+
+/* Difficulty bar */
+.diff-bar{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap}
+.diff-btn{
+  padding:8px 20px;border-radius:20px;border:2px solid rgba(255,255,255,.3);
+  cursor:pointer;font-weight:700;font-size:.85rem;
+  background:rgba(255,255,255,.12);color:rgba(255,255,255,.8);
+  transition:all .18s;
+}
+.diff-btn:hover{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.6);color:#fff}
+.diff-btn.active{border-color:transparent;color:#fff}
+
+/* Diagram */
+.diagram{
+  background:#f8fafc;border:1.5px solid #e5e7eb;border-radius:12px;
+  padding:12px 8px;margin-bottom:22px;display:flex;justify-content:center;
+}
+.diagram svg{max-width:280px;width:100%;height:auto}
+.diagram.hidden{display:none}
+
+/* Confetti */
+.confetti-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:100;overflow:hidden}
+.conf{
+  position:absolute;top:-10px;width:10px;height:10px;
+  border-radius:2px;animation:fall linear forwards;
+}
+@keyframes fall{
+  to{transform:translateY(100vh) rotate(720deg);opacity:0}
+}
+
+@media(max-width:520px){
+  header h1{font-size:1.7rem}
+  .quiz-box{padding:22px 16px}
+  .qtext{font-size:1.3rem}
+  .opts{grid-template-columns:1fr}
+  .opt-btn{font-size:1rem;padding:13px}
+  .score-big{font-size:4rem}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Maths Practice</h1>
+  <p>Year 7 &mdash; New Zealand Curriculum</p>
+</header>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+  <div class="diff-bar" id="diffBar"></div>
+  <div class="grid" id="topicGrid"></div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="screen">
+  <button class="back-btn" onclick="showHome()">&#8592; Choose Topic</button>
+  <div class="quiz-box">
+    <div class="qhead">
+      <span class="badge" id="badge"></span>
+      <span class="scorelabel" id="scorelabel">0 / 0</span>
+    </div>
+    <div class="prog-wrap"><div class="prog-bar" id="progBar" style="width:0%"></div></div>
+    <div class="qnum" id="qnum">Question 1 of 10</div>
+    <div class="qtext" id="qtext"></div>
+    <div class="diagram hidden" id="diagram"></div>
+    <div class="opts" id="opts"></div>
+    <div class="feedback" id="feedback"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextQ()">Next Question &rarr;</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div id="results" class="screen">
+  <div class="res-box">
+    <div class="res-title" id="resTitle">Quiz Complete!</div>
+    <div class="res-sub" id="resSub"></div>
+    <div class="score-big"><span id="finalScore">0</span><span class="score-den">/10</span></div>
+    <div class="stars" id="stars"></div>
+    <div class="res-msg" id="resMsg"></div>
+    <div class="new-best" id="newBest">&#127942; New personal best!</div>
+    <div class="res-actions">
+      <button class="btn btn-primary" onclick="retry()">Try Again</button>
+      <button class="btn btn-secondary" onclick="showHome()">Choose Topic</button>
+    </div>
+    <div class="breakdown" id="breakdown"></div>
+  </div>
+</div>
+
+<div class="confetti-wrap" id="confettiWrap"></div>
+<div id="version" style="position:fixed;bottom:10px;right:14px;font-size:.65rem;color:rgba(255,255,255,.3);pointer-events:none;font-family:monospace;z-index:50;user-select:none"></div>
+
+<script>
+// ── Utilities ────────────────────────────────────────────────────────────────
+const R=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+
+function shuffle(a){
+  const arr=[...a];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+
+function makeOpts(correct, wrongs){
+  const cs = correct.toString();
+  const pool = [...new Set(wrongs.map(w=>w.toString()).filter(w=>w!==cs && w!=='NaN' && !w.includes('undefined')))];
+  while(pool.length<3){
+    const n = Number(cs);
+    if(!isNaN(n)){
+      const try1=(n+pool.length+1).toString();
+      if(!pool.includes(try1)&&try1!==cs) pool.push(try1);
+    } else {
+      pool.push('None of these');break;
+    }
+  }
+  return shuffle([cs,...pool.slice(0,3)]);
+}
+
+function gcd(a,b){a=Math.abs(a);b=Math.abs(b);return b===0?a:gcd(b,a%b);}
+
+// ── SVG Diagrams ─────────────────────────────────────────────────────────────
+function dRect(l, w, unknownSide){
+  const lLbl=unknownSide==='l'?'?':l+' m';
+  const wLbl=unknownSide==='w'?'?':w+' m';
+  return `<svg viewBox="0 0 220 140" xmlns="http://www.w3.org/2000/svg">
+    <rect x="30" y="25" width="160" height="90" fill="#eef2ff" stroke="#6366f1" stroke-width="2.5" rx="3"/>
+    <text x="110" y="16" text-anchor="middle" font-size="14" font-weight="700" fill="#1e1b4b">${lLbl}</text>
+    <text x="14" y="70" text-anchor="middle" font-size="14" font-weight="700" fill="#1e1b4b" transform="rotate(-90,14,70)">${wLbl}</text>
+  </svg>`;
+}
+
+function dRightTriangle(base, height){
+  return `<svg viewBox="0 0 220 165" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="30,130 180,130 30,25" fill="#dcfce7" stroke="#10b981" stroke-width="2.5"/>
+    <path d="M30,115 L45,115 L45,130" fill="none" stroke="#10b981" stroke-width="1.8"/>
+    <text x="105" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#1e1b4b">base = ${base} cm</text>
+    <text x="12" y="78" text-anchor="middle" font-size="13" font-weight="700" fill="#1e1b4b" transform="rotate(-90,12,78)">height = ${height} cm</text>
+    <text x="30" y="18" font-size="11" fill="#374151">right-angled triangle</text>
+  </svg>`;
+}
+
+function dStraightLine(a){
+  return `<svg viewBox="0 0 240 105" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="65" x2="230" y2="65" stroke="#374151" stroke-width="2.5"/>
+    <line x1="120" y1="12" x2="120" y2="65" stroke="#6366f1" stroke-width="2.5"/>
+    <path d="M145,65 A25,25 0 0,0 120,40" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,2"/>
+    <text x="152" y="57" font-size="13" font-weight="700" fill="#ef4444">${a}°</text>
+    <path d="M95,65 A25,25 0 0,1 120,40" fill="none" stroke="#6366f1" stroke-width="2"/>
+    <text x="58" y="57" font-size="13" font-weight="700" fill="#6366f1">?</text>
+    <text x="120" y="96" text-anchor="middle" font-size="11" fill="#6b7280">angles on a straight line = 180°</text>
+  </svg>`;
+}
+
+function dTriangleAngles(a, b){
+  return `<svg viewBox="0 0 220 165" xmlns="http://www.w3.org/2000/svg">
+    <polygon points="110,18 18,145 202,145" fill="#fef3c7" stroke="#f59e0b" stroke-width="2.5"/>
+    <text x="110" y="11" text-anchor="middle" font-size="13" font-weight="700" fill="#374151">${a}°</text>
+    <text x="6" y="160" font-size="13" font-weight="700" fill="#374151">${b}°</text>
+    <text x="202" y="160" text-anchor="end" font-size="14" font-weight="700" fill="#6366f1">?</text>
+    <text x="110" y="160" text-anchor="middle" font-size="11" fill="#6b7280">angles in a triangle = 180°</text>
+  </svg>`;
+}
+
+function dAngle(degrees){
+  // cos(-r)=cos(r), sin(-r)=-sin(r) — rays go upward for positive angles
+  const rad=degrees*Math.PI/180;
+  const cx=80,cy=100,r=80,ar=30;
+  // second ray
+  const ex=+(cx+r*Math.cos(-rad)).toFixed(1);
+  const ey=+(cy+r*Math.sin(-rad)).toFixed(1);
+  // arc endpoint
+  const ax=+(cx+ar*Math.cos(-rad)).toFixed(1);
+  const ay=+(cy+ar*Math.sin(-rad)).toFixed(1);
+
+  if(degrees===90){
+    return `<svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+      <line x1="${cx}" y1="${cy}" x2="${cx+r}" y2="${cy}" stroke="#374151" stroke-width="2.5"/>
+      <line x1="${cx}" y1="${cy}" x2="${cx}" y2="${cy-r}" stroke="#374151" stroke-width="2.5"/>
+      <rect x="${cx}" y="${cy-20}" width="20" height="20" fill="none" stroke="#6366f1" stroke-width="2"/>
+    </svg>`;
+  }
+  if(degrees===180){
+    return `<svg viewBox="0 0 240 90" xmlns="http://www.w3.org/2000/svg">
+      <line x1="20" y1="65" x2="220" y2="65" stroke="#374151" stroke-width="2.5"/>
+      <path d="M 90,65 A 30,30 0 0,0 150,65" fill="none" stroke="#6366f1" stroke-width="2"/>
+      <text x="120" y="48" text-anchor="middle" font-size="13" font-weight="700" fill="#6366f1">180°</text>
+    </svg>`;
+  }
+  if(degrees>180){
+    // Reflex: show 90° reference with large arc
+    return `<svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+      <line x1="80" y1="100" x2="165" y2="100" stroke="#374151" stroke-width="2.5"/>
+      <line x1="80" y1="100" x2="80" y2="20" stroke="#374151" stroke-width="2.5"/>
+      <path d="M 120,100 A 40,40 0 1,0 80,60" fill="none" stroke="#6366f1" stroke-width="2.5"/>
+      <text x="100" y="140" text-anchor="middle" font-size="12" fill="#6b7280">reflex — ${degrees}°</text>
+    </svg>`;
+  }
+  // Acute and obtuse: sweep=0 (CCW in screen) draws arc through the opening
+  const large=0;
+  return `<svg viewBox="0 0 200 120" xmlns="http://www.w3.org/2000/svg">
+    <line x1="${cx}" y1="${cy}" x2="${cx+r}" y2="${cy}" stroke="#374151" stroke-width="2.5"/>
+    <line x1="${cx}" y1="${cy}" x2="${ex}" y2="${ey}" stroke="#374151" stroke-width="2.5"/>
+    <path d="M ${cx+ar},${cy} A ${ar},${ar} 0 ${large},0 ${ax},${ay}"
+          fill="none" stroke="#6366f1" stroke-width="2"/>
+    <text x="${cx+55}" y="${cy-25}" font-size="14" font-weight="700" fill="#374151">${degrees}°</text>
+  </svg>`;
+}
+
+function dVerticallyOpposite(a){
+  return `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg">
+    <line x1="15" y1="15" x2="185" y2="145" stroke="#374151" stroke-width="2.5"/>
+    <line x1="185" y1="15" x2="15" y2="145" stroke="#374151" stroke-width="2.5"/>
+    <text x="100" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#ef4444">${a}°</text>
+    <text x="100" y="125" text-anchor="middle" font-size="14" font-weight="700" fill="#6366f1">?</text>
+    <text x="100" y="156" text-anchor="middle" font-size="11" fill="#6b7280">vertically opposite angles are equal</text>
+  </svg>`;
+}
+
+function dCoInterior(a){
+  return `<svg viewBox="0 0 220 185" xmlns="http://www.w3.org/2000/svg">
+    <line x1="10" y1="52" x2="210" y2="52" stroke="#374151" stroke-width="2.5"/>
+    <line x1="10" y1="132" x2="210" y2="132" stroke="#374151" stroke-width="2.5"/>
+    <text x="168" y="47" font-size="12" fill="#374151">&#8594;</text>
+    <text x="168" y="127" font-size="12" fill="#374151">&#8594;</text>
+    <line x1="65" y1="8" x2="145" y2="175" stroke="#6366f1" stroke-width="2.5"/>
+    <text x="92" y="50" font-size="13" font-weight="700" fill="#ef4444">${a}°</text>
+    <text x="92" y="128" font-size="14" font-weight="700" fill="#6366f1">?</text>
+    <text x="110" y="180" text-anchor="middle" font-size="11" fill="#6b7280">co-interior angles add to 180°</text>
+  </svg>`;
+}
+
+// ── Difficulty ───────────────────────────────────────────────────────────────
+const DIFFICULTIES=[
+  {id:1,name:'Easy',    color:'#22c55e',desc:'Building blocks'},
+  {id:2,name:'Medium',  color:'#f59e0b',desc:'Year 7 standard'},
+  {id:3,name:'Hard',    color:'#ef4444',desc:'Push yourself'},
+  {id:4,name:'Genius',  color:'#8b5cf6',desc:'Extension level'},
+];
+let difficulty=2;
+
+// ── Question Generators ─────────────────────────────────────────────────────
+function qAddSub(){
+  const df=difficulty,t=R(0,3);
+  if(df===1){
+    if(t===0){const a=R(10,60),b=R(10,40),ans=a+b;return{q:`${a} + ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans-10]};}
+    if(t===1){const a=R(20,80),b=R(5,a-5),ans=a-b;return{q:`${a} − ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans+5]};}
+    if(t===2){const b=R(5,30),sum=R(b+10,60),a=sum-b;return{q:`${a} + ___ = ${sum}`,a:b,w:[b+1,b-1,b+5,b+10]};}
+    const a=R(10,40),b=R(5,20),c=R(5,15),ans=a+b+c;return{q:`${a} + ${b} + ${c} = ?`,a:ans,w:[ans+1,ans-1,ans+5,ans-5]};
+  }
+  if(df===2){
+    if(t===0){const a=R(100,799),b=R(100,999-a),ans=a+b;return{q:`${a} + ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans-10,ans+100,ans-100]};}
+    if(t===1){const a=R(300,999),b=R(100,a-50),ans=a-b;return{q:`${a} − ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans-10,ans+100]};}
+    if(t===2){const b=R(50,300),sum=R(b+200,900),a=sum-b;return{q:`${a} + ___ = ${sum}`,a:b,w:[b+1,b-1,b+10,b-10,b+100]};}
+    const a=R(50,200),b=R(20,100),c=R(10,80),ans=a+b+c;return{q:`${a} + ${b} + ${c} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans-10,ans+5]};
+  }
+  if(df===3){
+    if(t===0){const a=R(1000,7999),b=R(1000,9999-a),ans=a+b;return{q:`${a} + ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans-10,ans+100,ans-100]};}
+    if(t===1){const a=R(3000,9999),b=R(1000,a-500),ans=a-b;return{q:`${a} − ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans-10,ans+100]};}
+    if(t===2){const b=R(500,3000),sum=R(b+2000,9000),a=sum-b;return{q:`${a} + ___ = ${sum}`,a:b,w:[b+1,b-1,b+10,b-100,b+100]};}
+    const a=R(1000,4000),b=R(500,2000),c=R(200,1000),ans=a+b+c;return{q:`${a} + ${b} + ${c} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans-10,ans+100]};
+  }
+  // Genius: decimals + BODMAS
+  if(t===0){const a=(R(100,999)/10).toFixed(1),b=(R(100,999)/10).toFixed(1),ans=(+a+ +b).toFixed(1);return{q:`${a} + ${b} = ?`,a:ans,w:[(+ans+0.1).toFixed(1),(+ans-0.1).toFixed(1),(+ans+1).toFixed(1),(+ans-1).toFixed(1)]};}
+  if(t===1){const a=R(10000,79999),b=R(10000,99999-a),ans=a+b;return{q:`${a} + ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+10,ans-10,ans+100]};}
+  if(t===2){const a=R(5,20),b=R(2,10),c=R(3,15),ans=a+b*c;return{q:`${a} + ${b} × ${c} = ?`,a:ans,w:[ans+b,ans-c,(a+b)*c,ans+1,ans-1]};}
+  const a=R(2,8),b=R(2,8),c=R(1,5),ans=(a+b)*c;return{q:`(${a} + ${b}) × ${c} = ?`,a:ans,w:[a+b*c,ans+c,ans-c,ans+1]};
+}
+
+function qMultDiv(){
+  const df=difficulty,t=R(0,4);
+  if(df===1){
+    if(t===0){const a=R(2,10),b=R(2,10),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[(a+1)*b,(a-1)*b,a*(b+1),ans+1]};}
+    if(t===1){const b=R(2,5),ans=R(2,10),a=b*ans;return{q:`${a} ÷ ${b} = ?`,a:ans,w:[ans+1,ans-1,b,a-b]};}
+    if(t===2){const b=R(2,6),ans=R(2,8),prod=b*ans;return{q:`${b} × ___ = ${prod}`,a:ans,w:[ans+1,ans-1,prod,b]};}
+    if(t===3){const a=R(2,6),b=R(2,6),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[(a+1)*b,a*(b-1),ans+2,ans-2]};}
+    const b=R(2,5),ans=R(3,12),a=b*ans;return{q:`${a} ÷ ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+2,b]};
+  }
+  if(df===2){
+    if(t===0){const a=R(12,99),b=R(2,9),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[ans+b,ans-b,ans+a,a*b+10,(a+1)*b]};}
+    if(t===1){const a=R(11,25),b=R(11,25),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[(a+1)*b,(a-1)*b,a*(b+1),ans+10,ans-10]};}
+    if(t===2){const a=R(3,12),b=R(3,12),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[(a+1)*b,(a-1)*b,a*(b+1),a*(b-1)]};}
+    if(t===3){const b=R(2,9),ans=R(10,50),a=b*ans;return{q:`${a} ÷ ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+b,b,a-b]};}
+    const b=R(3,9),ans=R(4,15),prod=b*ans;return{q:`${b} × ___ = ${prod}`,a:ans,w:[ans+1,ans-1,ans+2,prod,b]};
+  }
+  if(df===3){
+    // 3-digit × 2-digit, long division with remainders
+    if(t===0){const a=R(100,499),b=R(11,25),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[(a+1)*b,(a-1)*b,a*(b+1),ans+10,ans-10]};}
+    if(t===1){const b=R(3,12),ans=R(20,80),rem=R(1,b-1),a=b*ans+rem;return{q:`${a} ÷ ${b} = ? remainder ?`,a:`${ans} r ${rem}`,w:[`${ans} r ${rem+1}`,`${ans+1} r ${rem}`,`${ans-1} r ${rem}`,`${ans} r 0`]};}
+    if(t===2){const a=R(20,99),b=R(2,9),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[(a+2)*b,(a-1)*b,a*(b+1),ans+10]};}
+    if(t===3){const b=R(6,15),ans=R(12,50),prod=b*ans;return{q:`${prod} ÷ ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+2,b]};}
+    const a=R(12,50),b=R(12,30),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[(a+1)*b,(a-1)*b,a*(b+2),ans-b]};
+  }
+  // Genius: squares, cubes, large numbers
+  if(t===0){const n=R(12,20),ans=n*n;return{q:`${n}² = ?`,a:ans,w:[ans+n,ans-n,(n+1)*(n+1),ans+1]};}
+  if(t===1){const n=R(3,7),ans=n*n*n;return{q:`${n}³ = ?`,a:ans,w:[n*n,ans+n,ans-n,(n+1)*(n+1)*(n+1)]};}
+  if(t===2){const a=R(100,999),b=R(11,99),ans=a*b;return{q:`${a} × ${b} = ?`,a:ans,w:[(a+1)*b,(a-1)*b,a*(b+1),ans+10]};}
+  if(t===3){const b=R(7,25),ans=R(30,200),prod=b*ans;return{q:`${prod} ÷ ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+5,ans-5]};}
+  const a=R(11,25),b=R(11,25),c=R(2,5),ans=a*b*c;return{q:`${a} × ${b} × ${c} = ?`,a:ans,w:[ans+a,ans-b,a*b+c,ans+10]};
+}
+
+function qFractions(){
+  const df=difficulty,t=R(0,4);
+  if(df===1){
+    // Easy: half/quarter of small numbers, simple equivalents, name fractions
+    if(t===0){const whole=R(2,10)*2,ans=whole/2;return{q:`What is 1/2 of ${whole}?`,a:ans,w:[ans+1,ans-1,whole,ans*2]};}
+    if(t===1){const whole=R(1,8)*4,ans=whole/4;return{q:`What is 1/4 of ${whole}?`,a:ans,w:[ans+1,ans-1,whole/2,ans*2]};}
+    if(t===2){const mult=R(2,5),bigD=2*mult,bigN=mult;return{q:`1/2 = ___/${bigD}`,a:bigN,w:[bigN+1,bigN-1,bigD,1]};}
+    if(t===3){const d=R(3,6),n1=1,n2=1,num=n1+n2,g=gcd(num,d),an=num/g,ad=d/g;const ans=ad===1?`${an}`:`${an}/${ad}`;return{q:`1/${d} + 1/${d} = ?`,a:ans,w:[`1/${d}`,`2/${d+d}`,`${num+1}/${d}`,`3/${d}`].filter(x=>x!==ans)};}
+    const pairs=[[1,2],[1,3],[1,4],[1,5]];const[n,d]=pairs[R(0,pairs.length-1)];const mult=R(2,4),bN=n*mult,bD=d*mult,ans=`${n}/${d}`;
+    return{q:`Simplify: ${bN}/${bD}`,a:ans,w:[`${bN}/${bD}`,`${n+1}/${d}`,`${bN}/${d}`,`1/${d+1}`].filter(x=>x!==ans)};
+  }
+  if(df===2){
+    if(t===0){const ds=[2,3,4,5,8,10],d=ds[R(0,ds.length-1)];const n=R(1,d-1),whole=d*R(2,8),ans=(n*whole)/d;return{q:`What is ${n}/${d} of ${whole}?`,a:ans,w:[ans+1,ans-1,ans+d,whole/d,ans*2]};}
+    if(t===1){const d=R(3,10),n1=R(1,d-1),n2=R(1,d-n1);const num=n1+n2,g=gcd(num,d),an=num/g,ad=d/g;const ans=ad===1?`${an}`:`${an}/${ad}`;const wrongs=[`${num}/${d+d}`,`${num+1}/${d}`,`${n1}/${d}`,`${n2}/${d}`].filter(x=>x!==ans);return{q:`${n1}/${d} + ${n2}/${d} = ?`,a:ans,w:wrongs};}
+    if(t===2){const pairs=[[1,2],[1,3],[2,3],[1,4],[3,4],[1,5],[2,5],[3,5]];const[n,d]=pairs[R(0,pairs.length-1)];const mult=R(2,6),bigN=n*mult,bigD=d*mult;return{q:`${n}/${d} = ___/${bigD}`,a:bigN,w:[bigN+1,bigN-1,bigN+mult,n,d]};}
+    if(t===3){const set=[['2/3','3/4','3/4'],['1/2','3/5','3/5'],['5/8','2/3','2/3'],['3/4','4/5','4/5'],['1/3','2/5','2/5'],['7/10','3/4','3/4']][R(0,5)];const[f1,f2,bigger]=set,smaller=bigger===f1?f2:f1;return{q:`Which fraction is larger: ${f1} or ${f2}?`,a:bigger,opts:[bigger,smaller,'They are equal','Cannot be compared']};}
+    const pairs=[[1,2],[1,3],[2,3],[1,4],[3,4],[1,5],[2,5],[3,5]];const[n,d]=pairs[R(0,pairs.length-1)];const mult=R(2,5),bN=n*mult,bD=d*mult,ans=`${n}/${d}`;
+    return{q:`Simplify: ${bN}/${bD}`,a:ans,w:[`${bN}/${bD}`,`${n+1}/${d}`,`${n}/${d+1}`,`${n-1>0?n-1:n+2}/${d}`].filter(x=>x!==ans)};
+  }
+  if(df===3){
+    // Hard: multiply/divide fractions, different denominators
+    if(t===0){const n1=R(1,4),d1=R(3,8),n2=R(1,4),d2=R(3,8);const rn=n1*n2,rd=d1*d2,g=gcd(rn,rd),an=rn/g,ad=rd/g;const ans=ad===1?`${an}`:`${an}/${ad}`;return{q:`${n1}/${d1} × ${n2}/${d2} = ?`,a:ans,w:[`${n1*n2}/${d1+d2}`,`${n1+n2}/${d1*d2}`,`${an+1}/${ad}`,`${an}/${ad+1}`].filter(x=>x!==ans)};}
+    if(t===1){const n1=R(2,5),d1=R(3,8),n2=R(2,5),d2=R(3,8);const rn=n1*d2,rd=d1*n2,g=gcd(rn,rd),an=rn/g,ad=rd/g;const ans=ad===1?`${an}`:`${an}/${ad}`;return{q:`${n1}/${d1} ÷ ${n2}/${d2} = ?`,a:ans,w:[`${n1*n2}/${d1*d2}`,`${d1}/${n1}`,`${an+1}/${ad}`,`${an}/${ad+1}`].filter(x=>x!==ans)};}
+    if(t===2){// add different denominators - find LCD
+      const d1=R(2,6),d2=R(2,6);const l=d1*d2/gcd(d1,d2);const n1=R(1,d1-1),n2=R(1,d2-1);const rn=n1*(l/d1)+n2*(l/d2),g=gcd(rn,l),an=rn/g,ad=l/g;const ans=ad===1?`${an}`:`${an}/${ad}`;return{q:`${n1}/${d1} + ${n2}/${d2} = ?`,a:ans,w:[`${n1+n2}/${d1+d2}`,`${n1+n2}/${d1*d2}`,`${an+1}/${ad}`,`${an}/${ad+2}`].filter(x=>x!==ans)};}
+    if(t===3){const ds=[2,3,4,5,6,8],d=ds[R(0,ds.length-1)];const n=R(1,d-1),whole=d*R(3,10),ans=(n*whole)/d;return{q:`What is ${n}/${d} of ${whole}?`,a:ans,w:[ans+d,ans-1,whole/d,ans*2]};}
+    // mixed number addition
+    const w1=R(1,4),n1=R(1,3),d=R(4,6),w2=R(1,3),n2=R(1,d-1);const totN=n1+n2,extra=Math.floor(totN/d),remN=totN%d;const totW=w1+w2+extra;const ans=remN===0?`${totW}`:`${totW} and ${remN}/${d}`;
+    return{q:`${w1} and ${n1}/${d} + ${w2} and ${n2}/${d} = ?`,a:ans,w:[`${totW-1} and ${remN+1}/${d}`,`${totW+1} and ${remN}/${d}`,`${w1+w2} and ${totN}/${d}`,`${totW}`].filter(x=>x!==ans)};
+  }
+  // Genius: complex mixed numbers, reverse fractions
+  if(t===0){const w=R(2,5),n=R(1,5),d=R(4,8);const tot=w*d+n;return{q:`Convert ${w} and ${n}/${d} to an improper fraction`,a:`${tot}/${d}`,w:[`${tot+1}/${d}`,`${w*n}/${d}`,`${tot}/${d+1}`,`${tot-1}/${d}`]};}
+  if(t===1){const n1=R(2,5),d1=R(3,7),n2=R(2,5),d2=R(3,7);const rn=n1*d2-n2*d1,rd=d1*d2,g=gcd(Math.abs(rn),rd),an=rn/g,ad=rd/g;if(an<=0)return qFractions();const ans=ad===1?`${an}`:`${an}/${ad}`;return{q:`${n1}/${d1} − ${n2}/${d2} = ?`,a:ans,w:[`${n1-n2}/${d1+d2}`,`${Math.abs(n1-n2)}/${d1*d2}`,`${an+1}/${ad}`,`${an}/${ad+1}`].filter(x=>x!==ans)};}
+  if(t===2){const d1=R(2,5),d2=R(3,7);const l=d1*d2/gcd(d1,d2);const n1=R(1,d1-1),n2=R(1,d2-1);const rn=n1*(l/d1)-n2*(l/d2),g=gcd(Math.abs(rn),l);if(rn<=0)return qFractions();const an=rn/g,ad=l/g;const ans=ad===1?`${an}`:`${an}/${ad}`;return{q:`${n1}/${d1} − ${n2}/${d2} = ?`,a:ans,w:[`${n1-n2}/${d1+d2}`,`${an+1}/${ad}`,`${an}/${ad+2}`,`0`].filter(x=>x!==ans)};}
+  if(t===3){const n1=R(1,4),d1=R(3,8),n2=R(1,4),d2=R(3,8);const rn=n1*d2,rd=d1*n2,g=gcd(rn,rd),an=rn/g,ad=rd/g;const ans=ad===1?`${an}`:`${an}/${ad}`;return{q:`${n1}/${d1} ÷ ${n2}/${d2} = ?`,a:ans,w:[`${n1*n2}/${d1*d2}`,`${an+1}/${ad}`,`${an}/${ad+1}`,`${d1}/${d2}`].filter(x=>x!==ans)};}
+  const frac=[[2,3],[3,4],[4,5],[5,6],[3,5]][R(0,4)];const[n,d]=frac;const ds=[2,3,4,5,6,8],d2=ds[R(0,ds.length-1)];const rn=n*d2,rd=d*d2,g=gcd(rn,rd),an=rn/g,ad=rd/g;const ans=ad===1?`${an}`:`${an}/${ad}`;
+  return{q:`${n}/${d} × ${d2} = ?`,a:ans,w:[`${n*d2}/${d}`,`${an+1}/${ad}`,`${n+d2}/${d}`,`${an}/${ad+1}`].filter(x=>x!==ans)};
+}
+
+function qDecimals(){
+  const df=difficulty,t=R(0,3);
+  if(df===1){
+    if(t===0){const a=(R(10,50)/10).toFixed(1),b=(R(10,30)/10).toFixed(1),ans=(+a+ +b).toFixed(1);return{q:`${a} + ${b} = ?`,a:ans,w:[(+ans+0.1).toFixed(1),(+ans-0.1).toFixed(1),(+ans+1).toFixed(1),(+ans+0.2).toFixed(1)]};}
+    if(t===1){const ps=[10,50],p=ps[R(0,1)];const ams=[10,20,40,60,100],am=ams[R(0,ams.length-1)];const ans=(p/100)*am;return{q:`What is ${p}% of $${am}?`,a:`$${ans}`,w:[`$${ans+5}`,`$${ans-5}`,`$${am-ans}`,`$${ans*2}`].filter(x=>+x.slice(1)>0)};}
+    if(t===2){const conv=[['1/2','0.5'],['1/4','0.25'],['1/10','0.1'],['3/4','0.75']][R(0,3)];const[frac,dec]=conv;return{q:`Convert ${frac} to a decimal`,a:dec,w:[(+dec+0.1).toFixed(2),(+dec+0.5).toFixed(2),(1-+dec).toFixed(2)].map(v=>String(+v)).filter(x=>x!==dec)};}
+    const pairs=[['0.5','50%'],['0.25','25%'],['0.1','10%'],['0.75','75%']];const pick=pairs[R(0,3)];const others=shuffle(pairs.filter(p=>p!==pick)).slice(0,3);
+    return{q:`Convert ${pick[0]} to a percentage`,a:pick[1],opts:[pick[1],...others.map(p=>p[1])]};
+  }
+  if(df===2){
+    if(t===0){const a=(R(15,95)/10).toFixed(1),b=(R(11,50)/10).toFixed(1);const big=Math.max(+a,+b),sm=Math.min(+a,+b);if(R(0,1)===0){const ans=(+a+ +b).toFixed(1);return{q:`${a} + ${b} = ?`,a:ans,w:[(+ans+0.1).toFixed(1),(+ans-0.1).toFixed(1),(+ans+1).toFixed(1),(+ans-1).toFixed(1)]};} const ans=(big-sm).toFixed(1);return{q:`${big.toFixed(1)} − ${sm.toFixed(1)} = ?`,a:ans,w:[(+ans+0.1).toFixed(1),(+ans-0.1).toFixed(1),(+ans+1).toFixed(1),(+ans+0.2).toFixed(1)]};}
+    if(t===1){const ps=[10,20,25,50,75],p=ps[R(0,ps.length-1)];const ams=[20,40,60,80,100,120,200,50,150],am=ams[R(0,ams.length-1)];const ans=(p/100)*am;return{q:`What is ${p}% of $${am}?`,a:`$${ans}`,w:[`$${ans+5}`,`$${ans-5}`,`$${am-ans}`,`$${ans*2}`].filter(x=>+x.slice(1)>0)};}
+    if(t===2){const conv=[['1/2','0.5'],['1/4','0.25'],['3/4','0.75'],['1/5','0.2'],['2/5','0.4'],['3/5','0.6'],['4/5','0.8'],['1/10','0.1'],['3/10','0.3'],['7/10','0.7']][R(0,9)];const[frac,dec]=conv;return{q:`Convert ${frac} to a decimal`,a:dec,w:[(+dec+0.1).toFixed(2),(+dec+0.2).toFixed(2),(+dec+0.05).toFixed(2),(+dec*2).toFixed(2)].map(v=>String(+v)).filter(x=>x!==dec)};}
+    const pairs=[['0.35','35%'],['0.7','70%'],['0.15','15%'],['0.4','40%'],['0.08','8%'],['0.95','95%'],['0.25','25%'],['0.6','60%']];const pick=pairs[R(0,pairs.length-1)];const others=shuffle(pairs.filter(p=>p!==pick)).slice(0,3);
+    return{q:`Convert ${pick[0]} to a percentage`,a:pick[1],opts:[pick[1],...others.map(p=>p[1])]};
+  }
+  if(df===3){
+    // Hard: % increase/decrease, find original price, 2dp decimals
+    if(t===0){const pct=[10,20,50][R(0,2)],orig=R(2,10)*10,inc=R(0,1);const change=orig*pct/100;const ans=inc?orig+change:orig-change;const word=inc?'increase':'decrease';return{q:`${word[0].toUpperCase()+word.slice(1)} $${orig} by ${pct}%`,a:`$${ans}`,w:[`$${ans+change}`,`$${orig+pct}`,`$${ans-5}`,`$${ans+5}`]};}
+    if(t===1){const orig=R(2,10)*10,pct=[10,20,50][R(0,2)],sale=orig*(1-pct/100);return{q:`After a ${pct}% discount the price is $${sale}. What was the original price?`,a:`$${orig}`,w:[`$${orig+10}`,`$${orig-10}`,`$${sale}`,`$${orig+orig*pct/100}`]};}
+    if(t===2){const a=(R(100,500)/100).toFixed(2),b=(R(100,300)/100).toFixed(2),ans=(+a+ +b).toFixed(2);return{q:`${a} + ${b} = ?`,a:ans,w:[(+ans+0.01).toFixed(2),(+ans-0.01).toFixed(2),(+ans+0.1).toFixed(2),(+ans-0.1).toFixed(2)]};}
+    const pct=[10,20,50][R(0,2)],am=R(2,10)*10,ans=am+am*pct/100;return{q:`What is $${am} increased by ${pct}%?`,a:`$${ans}`,w:[`$${ans+am*pct/100}`,`$${am-am*pct/100}`,`$${am*pct/100}`,`$${ans+10}`]};
+  }
+  // Genius: compound %, reverse %, multi-step
+  if(t===0){const p1=R(1,3)*10,p2=[10,20][R(0,1)],start=R(2,8)*100;const after1=start*(1+p1/100);const ans=after1*(1+p2/100);return{q:`$${start} grows by ${p1}% then by ${p2}%. Final amount?`,a:`$${ans}`,w:[`$${start*(1+(p1+p2)/100)}`,`$${ans+start*p2/100}`,`$${ans-start*p1/100}`,`$${ans+10}`]};}
+  if(t===1){const orig=R(2,8)*100,pct=[10,20,25,50][R(0,3)];const final=orig*(1+pct/100);return{q:`A price increased by ${pct}% to become $${final}. What was the original?`,a:`$${orig}`,w:[`$${orig+50}`,`$${orig-50}`,`$${final}`,`$${orig+pct}`]};}
+  if(t===2){const a=(R(1000,9999)/1000).toFixed(3),b=(R(1000,5000)/1000).toFixed(3),ans=(+a+ +b).toFixed(3);return{q:`${a} + ${b} = ?`,a:ans,w:[(+ans+0.001).toFixed(3),(+ans-0.001).toFixed(3),(+ans+0.01).toFixed(3),(+ans-0.01).toFixed(3)]};}
+  const rate=R(2,5),years=R(2,4),principal=R(2,8)*100;const interest=principal*rate/100*years;return{q:`Simple interest: $${principal} at ${rate}% for ${years} years. Total interest?`,a:`$${interest}`,w:[`$${interest+principal*rate/100}`,`$${interest+years*10}`,`$${interest-10}`,`$${principal*rate/100}`]};
+}
+
+function qIntegers(){
+  const df=difficulty,t=R(0,3);
+  if(df===1){
+    // Easy: number lines, simple negative context (temperature/floors), ordering
+    if(t===0){const start=R(-5,5),change=R(1,8),rise=R(0,1)===0;const ans=rise?start+change:start-change;const dir=rise?'rises':'drops';return{q:`Temperature is ${start}°C and ${dir} by ${change}°C. New temperature?`,a:`${ans}°C`,w:[`${ans+1}°C`,`${ans-1}°C`,`${-ans}°C`,`${Math.abs(ans)}°C`]};}
+    if(t===1){const nums=[-3,-1,0,2,5];const sorted=[...nums].sort((a,b)=>a-b);const pick=shuffle(nums).slice(0,4);const psorted=[...pick].sort((a,b)=>a-b);return{q:`Which is the smallest: ${shuffle(pick).join(', ')}?`,a:psorted[0],opts:shuffle(pick).map(String)};}
+    if(t===2){const a=R(0,10),b=R(1,5),ans=a-b;return{q:`${a} − ${b} = ?`,a:ans,w:[ans+1,ans-1,ans+2,a+b]};}
+    const floor=R(-3,8),change=R(1,5),up=R(0,1)===0;const ans=floor+(up?change:-change);const dir=up?'up':'down';
+    return{q:`A lift is on floor ${floor} and goes ${dir} ${change} floors. Which floor now?`,a:ans,w:[ans+1,ans-1,ans+2,-ans]};
+  }
+  if(df===2){
+    if(t===0){const a=R(-10,10),b=R(-10,10),ans=a+b;const bStr=b<0?`(${b})`:String(b);return{q:`${a} + ${bStr} = ?`,a:ans,w:[ans+1,ans-1,ans+2,-ans,Math.abs(ans)]};}
+    if(t===1){const a=R(-5,15),b=R(1,10),ans=a+b;return{q:`${a} − (−${b}) = ?`,a:ans,w:[a-b,ans+1,ans-1,-ans,Math.abs(ans)]};}
+    if(t===2){const start=R(-8,8),change=R(2,15),rise=R(0,1)===0;const ans=rise?start+change:start-change;const dir=rise?'rises':'drops';return{q:`Temperature is ${start}°C and ${dir} by ${change}°C. New temperature?`,a:`${ans}°C`,w:[`${ans+1}°C`,`${ans-1}°C`,`${-ans}°C`,`${Math.abs(ans)}°C`]};}
+    const nums=[];while(nums.length<4){const n=R(-10,10);if(!nums.includes(n))nums.push(n);}const sorted=[...nums].sort((a,b)=>a-b);
+    return{q:`Which is the smallest: ${shuffle(nums).join(', ')}?`,a:sorted[0],opts:shuffle(nums).map(String)};
+  }
+  if(df===3){
+    // Hard: multiply/divide negatives, BODMAS with negatives
+    if(t===0){const a=R(2,10),b=R(2,10),neg=R(0,1);const ans=neg?a*b:-(a*b);const qa=neg?`−${a}`:String(a);return{q:`${qa} × (−${b}) = ?`,a:ans,w:[neg?-(a*b):a*b,a+b,ans+b,ans-b]};}
+    if(t===1){const b=R(2,8),ans=R(2,10),neg=R(0,1);const dividend=neg?-(b*ans):b*ans;const qdiv=dividend<0?`(${dividend})`:String(dividend);return{q:`${qdiv} ÷ ${b} = ?`,a:neg?-ans:ans,w:[ans,-ans+1,ans-1,ans+b]};}
+    if(t===2){const a=R(-8,8),b=R(-5,5),c=R(2,6),ans=a+b*c;return{q:`${a} + ${b} × ${c} = ?`,a:ans,w:[(a+b)*c,ans+1,ans-1,a-b*c]};}
+    const a=R(2,6),b=R(2,6),neg=R(0,1);const ans=neg?-(a*b*2):a*b*2;return{q:`(−${a}) × ${neg?String(b):`(−${b})`} × 2 = ?`,a:ans,w:[-ans,ans+2*a,ans-2,ans+b]};
+  }
+  // Genius: powers with negatives, multi-step
+  if(t===0){const n=R(2,5),even=n%2===0;const ans=even?n*n:-(n*n);return{q:`(−${n})² = ?`,a:n*n,opts:[String(n*n),String(-(n*n)),String(n),String(n*n*n)]};}
+  if(t===1){const a=R(-5,5),b=R(-5,5),c=R(-5,5),ans=a*b+c;return{q:`${a} × ${b<0?`(${b})`:b} + ${c<0?`(${c})`:c} = ?`,a:ans,w:[ans+1,ans-1,(a+b)*c,a+b*c]};}
+  if(t===2){const a=R(2,8),b=R(2,5),ans=-(a*b);return{q:`−${a} × ${b} = ?`,a:ans,w:[a*b,-ans+b,ans-a,ans+1]};}
+  const nums=[];while(nums.length<4){const n=R(-20,20);if(!nums.includes(n))nums.push(n);}const sorted=[...nums].sort((a,b)=>a-b);
+  return{q:`Order from smallest to largest: ${shuffle(nums).join(', ')}`,a:sorted.join(', '),opts:[[...nums].sort((a,b)=>a-b),[...nums].sort((a,b)=>b-a),shuffle(nums),shuffle(nums)].map(x=>x.join(', '))};
+}
+
+function qGeometry(){
+  const df=difficulty,t=R(0,4);
+  if(df===1){
+    // Easy: count squares concept, simple rectangles sides 2-8
+    if(t===0){const l=R(2,8),w=R(2,6),ans=l*w;return{q:`What is the area of this rectangle?`,a:`${ans} m²`,d:dRect(l,w),w:[`${2*(l+w)} m²`,`${l+w} m²`,`${ans+l} m²`,`${ans-w} m²`]};}
+    if(t===1){const l=R(2,8),w=R(2,6),ans=2*(l+w);return{q:`What is the perimeter of this rectangle?`,a:`${ans} m`,d:dRect(l,w),w:[`${l*w} m`,`${l+w} m`,`${ans+2} m`,`${ans-2} m`]};}
+    if(t===2){const l=R(2,8),ans=4*l;return{q:`What is the perimeter of a square with side ${l} m?`,a:`${ans} m`,w:[`${l*l} m`,`${ans+l} m`,`${ans-l} m`,`${l*2} m`]};}
+    if(t===3){const l=R(2,8),ans=l*l;return{q:`What is the area of a square with side ${l} m?`,a:`${ans} m²`,w:[`${4*l} m²`,`${ans+l} m²`,`${ans-1} m²`,`${l*2} m²`]};}
+    const l=R(3,10),p=(l+R(2,6))*2,w=p/2-l;if(w<=0||!Number.isInteger(w))return qGeometry();
+    return{q:`A rectangle has perimeter ${p} m and length ${l} m. Find the width.`,a:`${w} m`,d:dRect(l,'?'),w:[`${w+1} m`,`${w-1} m`,`${p-l} m`,`${p/2} m`]};
+  }
+  if(df===2){
+    if(t===0){const l=R(3,15),w=R(2,12),ans=l*w;return{q:`What is the area of this rectangle?`,a:`${ans} m²`,d:dRect(l,w),w:[`${2*(l+w)} m²`,`${ans+l} m²`,`${ans+w} m²`,`${l+w} m²`]};}
+    if(t===1){const l=R(3,15),w=R(2,12),ans=2*(l+w);return{q:`What is the perimeter of this rectangle?`,a:`${ans} m`,d:dRect(l,w),w:[`${l*w} m`,`${ans+2} m`,`${ans-2} m`,`${l+w} m`]};}
+    if(t===2){const b=R(2,7)*2,h=R(3,10),ans=(b*h)/2;return{q:`What is the area of this right-angled triangle?`,a:`${ans} cm²`,d:dRightTriangle(b,h),w:[`${b*h} cm²`,`${ans+h} cm²`,`${b+h} cm²`,`${ans*2} cm²`]};}
+    if(t===3){const l=R(5,15),p=(l+R(3,15))*2,w=p/2-l;if(w<=0||!Number.isInteger(w))return qGeometry();return{q:`This rectangle has perimeter ${p} m and length ${l} m. Find the width.`,a:`${w} m`,d:dRect(l,'?'),w:[`${w+1} m`,`${w-1} m`,`${p-l} m`,`${p/2} m`]};}
+    const w=R(3,8),l=R(w+2,w+12),area=l*w;return{q:`This rectangle has area ${area} m² and width ${w} m. Find the length.`,a:`${l} m`,d:dRect('?',w),w:[`${l+1} m`,`${l-1} m`,`${area-w} m`,`${w*2} m`]};
+  }
+  if(df===3){
+    // Hard: circles, parallelogram, cuboid volume
+    if(t===0){const r=R(2,10);const ans=(Math.PI*r*r).toFixed(1);return{q:`Find the area of a circle with radius ${r} cm. (Use π ≈ 3.14)`,a:`${(3.14*r*r).toFixed(1)} cm²`,w:[`${(3.14*r*2).toFixed(1)} cm²`,`${(3.14*(r+1)*(r+1)).toFixed(1)} cm²`,`${(3.14*r).toFixed(1)} cm²`,`${(3.14*r*r+r).toFixed(1)} cm²`]};}
+    if(t===1){const r=R(2,8);const ans=(2*3.14*r).toFixed(1);return{q:`Find the circumference of a circle with radius ${r} cm. (Use π ≈ 3.14)`,a:`${ans} cm`,w:[`${(3.14*r*r).toFixed(1)} cm`,`${(2*3.14*(r+1)).toFixed(1)} cm`,`${(3.14*r).toFixed(1)} cm`,`${(2*3.14*r+r).toFixed(1)} cm`]};}
+    if(t===2){const b=R(3,12),h=R(2,8),ans=b*h;return{q:`Find the area of a parallelogram with base ${b} cm and perpendicular height ${h} cm.`,a:`${ans} cm²`,w:[`${2*(b+h)} cm²`,`${ans+h} cm²`,`${(b*h)/2} cm²`,`${ans+b} cm²`]};}
+    if(t===3){const l=R(2,10),w=R(2,8),h=R(2,8),ans=l*w*h;return{q:`Find the volume of a cuboid: length ${l} cm, width ${w} cm, height ${h} cm.`,a:`${ans} cm³`,w:[`${2*(l*w+l*h+w*h)} cm³`,`${ans+l} cm³`,`${l*w+h} cm³`,`${ans-w} cm³`]};}
+    const b=R(2,7)*2,h=R(3,10),ans=(b*h)/2;return{q:`What is the area of this right-angled triangle?`,a:`${ans} cm²`,d:dRightTriangle(b,h),w:[`${b*h} cm²`,`${ans+h} cm²`,`${b+h} cm²`,`${ans*2} cm²`]};
+  }
+  // Genius: surface area, cylinder, composite shapes
+  if(t===0){const r=R(2,7),h=R(3,12);const ans=Math.round(2*3.14*r*(r+h));return{q:`Find the total surface area of a cylinder: radius ${r} cm, height ${h} cm. (π ≈ 3.14)`,a:`${ans} cm²`,w:[`${Math.round(2*3.14*r*h)} cm²`,`${Math.round(3.14*r*r*h)} cm²`,`${ans+Math.round(2*3.14*r)} cm²`,`${ans-Math.round(3.14*r*r)} cm²`]};}
+  if(t===1){const l=R(2,8),w=R(2,6),h=R(2,6);const ans=2*(l*w+l*h+w*h);return{q:`Find the surface area of a cuboid: ${l}×${w}×${h} cm.`,a:`${ans} cm²`,w:[`${ans+l*w} cm²`,`${l*w*h} cm²`,`${ans-2*w*h} cm²`,`${ans+2} cm²`]};}
+  if(t===2){const r=R(2,6),h=R(3,10);const ans=Math.round(3.14*r*r*h);return{q:`Find the volume of a cylinder: radius ${r} cm, height ${h} cm. (π ≈ 3.14)`,a:`${ans} cm³`,w:[`${Math.round(2*3.14*r*(r+h))} cm³`,`${Math.round(3.14*r*h)} cm³`,`${ans+Math.round(3.14*r*r)} cm³`,`${ans-Math.round(3.14*r*r)} cm³`]};}
+  if(t===3){const outer=R(6,12),inner=R(2,outer-2),h=R(3,8);const ans=Math.round(3.14*(outer*outer-inner*inner)*h);return{q:`A hollow cylinder has outer radius ${outer} cm, inner radius ${inner} cm, height ${h} cm. Volume? (π ≈ 3.14)`,a:`${ans} cm³`,w:[`${Math.round(3.14*outer*outer*h)} cm³`,`${Math.round(3.14*inner*inner*h)} cm³`,`${ans+Math.round(3.14*inner*inner)} cm³`,`${ans-Math.round(3.14*inner*inner)} cm³`]};}
+  const l=R(4,12),w=R(3,8),notchL=R(1,Math.floor(l/2)),notchW=R(1,Math.floor(w/2));const ans=l*w-notchL*notchW;return{q:`An L-shaped room is ${l}×${w} m with a ${notchL}×${notchW} m corner cut out. Find the area.`,a:`${ans} m²`,w:[`${l*w} m²`,`${ans+notchL} m²`,`${ans-notchW} m²`,`${ans+notchL*notchW} m²`]};
+}
+
+function qAngles(){
+  const df=difficulty,t=R(0,4);
+  if(df===1){
+    // Easy: name angle types, straight line only, right angle facts
+    if(t===0){const set=[[45,'Acute'],[90,'Right'],[120,'Obtuse'],[180,'Straight'],[35,'Acute'],[145,'Obtuse']][R(0,5)];const[angle,atype]=set;return{q:`What type of angle is this?`,a:atype,d:dAngle(angle),opts:shuffle(['Acute','Right','Obtuse','Straight'])};}
+    if(t===1){const a=R(30,150),ans=180-a;return{q:`Find the missing angle on the straight line.`,a:`${ans}°`,d:dStraightLine(a),w:[`${ans+10}°`,`${ans-10}°`,`${360-a}°`,`${a}°`].filter(x=>+x>0)};}
+    if(t===2){return{q:`A right angle is how many degrees?`,a:'90°',opts:shuffle(['90°','180°','45°','360°'])};}
+    if(t===3){return{q:`A full turn (revolution) is how many degrees?`,a:'360°',opts:shuffle(['360°','180°','270°','90°'])};}
+    return{q:`Angles on a straight line add up to how many degrees?`,a:'180°',opts:shuffle(['180°','360°','90°','270°'])};
+  }
+  if(df===2){
+    if(t===0){const a=R(25,155),ans=180-a;return{q:`Find the missing angle on the straight line.`,a:`${ans}°`,d:dStraightLine(a),w:[`${ans+10}°`,`${ans-10}°`,`${360-a}°`,`${a}°`].filter(x=>+x>0)};}
+    if(t===1){const a=R(35,80),b=R(25,180-a-25),ans=180-a-b;return{q:`Find the missing angle in this triangle.`,a:`${ans}°`,d:dTriangleAngles(a,b),w:[`${ans+10}°`,`${ans-10}°`,`${a+b}°`,`${360-a-b}°`]};}
+    if(t===2){const set=[[45,'Acute'],[90,'Right'],[120,'Obtuse'],[180,'Straight'],[250,'Reflex'],[35,'Acute'],[145,'Obtuse']][R(0,6)];const[angle,atype]=set;return{q:`What type of angle is this?`,a:atype,d:dAngle(angle),opts:shuffle(['Acute','Right','Obtuse','Reflex'])};}
+    if(t===3){const a=R(30,150);return{q:`Find the vertically opposite angle marked ?.`,a:`${a}°`,d:dVerticallyOpposite(a),w:[`${180-a}°`,`${a+10}°`,`${a-10}°`,`${360-a}°`]};}
+    const a=R(35,145),ans=180-a;return{q:`Find the missing co-interior angle marked ?.`,a:`${ans}°`,d:dCoInterior(a),w:[`${a}°`,`${ans+10}°`,`${ans-10}°`,`${360-a}°`]};
+  }
+  if(df===3){
+    // Hard: alternate/corresponding angles, polygon interior angles, exterior angles
+    if(t===0){const a=R(35,145);return{q:`Find the alternate angle to ${a}°. (Parallel lines cut by a transversal)`,a:`${a}°`,d:dVerticallyOpposite(a),w:[`${180-a}°`,`${a+15}°`,`${a-10}°`,`${360-a}°`]};}
+    if(t===1){const sides=R(5,8);const interior=(sides-2)*180/sides;return{q:`What is each interior angle of a regular ${sides}-sided polygon?`,a:`${interior}°`,w:[`${(sides-2)*180}°`,`${interior+10}°`,`${interior-10}°`,`${360/sides}°`]};}
+    if(t===2){const sides=R(5,9);const ext=360/sides;return{q:`What is each exterior angle of a regular ${sides}-sided polygon?`,a:`${ext}°`,w:[`${(sides-2)*180/sides}°`,`${ext+5}°`,`${ext-5}°`,`${180-ext}°`]};}
+    if(t===3){const a=R(35,80),b=R(25,180-a-25),c=180-a-b;const ext=180-c;return{q:`In a triangle, two angles are ${a}° and ${b}°. Find the exterior angle at the third vertex.`,a:`${ext}°`,w:[`${c}°`,`${ext+10}°`,`${ext-10}°`,`${360-ext}°`]};}
+    // Quadrilateral angles
+    const a=R(60,120),b=R(60,120),c=R(60,120),ans=360-a-b-c;if(ans<=0||ans>=180)return qAngles();
+    return{q:`Three angles of a quadrilateral are ${a}°, ${b}°, and ${c}°. Find the fourth.`,a:`${ans}°`,w:[`${ans+10}°`,`${ans-10}°`,`${360-a-b}°`,`${180-ans}°`]};
+  }
+  // Genius: isosceles triangle, simultaneous angle equations, combined parallel lines
+  if(t===0){const base=R(30,70),equal=(180-base)/2;if(!Number.isInteger(equal))return qAngles();return{q:`An isosceles triangle has a base angle of ${base}°. Find the apex angle.`,a:`${2*equal-base+base}°`,w:[`${equal}°`,`${180-base}°`,`${2*base}°`,`${equal+10}°`].filter(x=>x!==`${2*equal-base+base}°`)};}
+  if(t===1){const apex=R(20,80),equal=(180-apex)/2;if(!Number.isInteger(equal))return qAngles();return{q:`An isosceles triangle has apex angle ${apex}°. Find each base angle.`,a:`${equal}°`,w:[`${apex}°`,`${equal+10}°`,`${equal-10}°`,`${180-equal}°`]};}
+  if(t===2){const sides=R(6,10);const interior=(sides-2)*180/sides;const ext=360/sides;return{q:`A regular ${sides}-gon has interior angles of ${interior}°. What is the sum of ALL interior angles?`,a:`${(sides-2)*180}°`,w:[`${sides*interior-interior}°`,`${(sides-1)*180}°`,`${sides*180}°`,`${(sides-2)*180+interior}°`]};}
+  const a=R(25,65);const ans=180-2*a;if(ans<=0)return qAngles();
+  return{q:`Two lines cross. One angle is ${a}°, the adjacent angle is also ${a}°. Find the remaining angle.`,a:`${ans}°`,w:[`${a}°`,`${180-a}°`,`${ans+a}°`,`${ans-10}°`]};
+}
+
+function qAlgebra(){
+  const df=difficulty,t=R(0,4);
+  if(df===1){
+    // Easy: x+a=b, simple substitution, linear sequences
+    if(t===0){const x=R(1,10),a=R(1,8),b=x+a;return{q:`Solve:  x + ${a} = ${b}`,a:`x = ${x}`,w:[`x = ${x+1}`,`x = ${x-1}`,`x = ${b}`,`x = ${a}`]};}
+    if(t===1){const x=R(1,10),a=R(1,8),b=x+a;return{q:`Solve:  ${b} − x = ${a}`,a:`x = ${x}`,w:[`x = ${x+1}`,`x = ${b}`,`x = ${a}`,`x = ${x-1}`]};}
+    if(t===2){const a=R(2,5),x=R(2,8),ans=a*x;return{q:`If x = ${x}, find:  ${a}x`,a:ans,w:[ans+a,ans-a,a+x,ans+1]};}
+    if(t===3){const start=R(1,8),step=R(2,5);const seq=[start,start+step,start+2*step,start+3*step],ans=start+4*step;return{q:`What comes next?  ${seq.join(', ')}, ___`,a:ans,w:[ans+1,ans-1,ans+step,ans-step]};}
+    const a=R(1,5),x=R(2,8),b=R(1,6),ans=a*x+b;return{q:`If x = ${x}, find:  ${a}x + ${b}`,a:ans,w:[ans+a,ans-b,a*x,ans+1]};
+  }
+  if(df===2){
+    if(t===0){const x=R(1,20),a=R(1,15),b=x+a;return{q:`Solve:  x + ${a} = ${b}`,a:`x = ${x}`,w:[`x = ${x+1}`,`x = ${x-1}`,`x = ${b}`,`x = ${a}`]};}
+    if(t===1){const a=R(2,9),x=R(2,12),b=a*x;return{q:`Solve:  ${a}x = ${b}`,a:`x = ${x}`,w:[`x = ${x+1}`,`x = ${x-1}`,`x = ${b}`,`x = ${a}`]};}
+    if(t===2){const a=R(2,5),x=R(1,10),b=R(1,10),c=a*x+b;return{q:`Solve:  ${a}x + ${b} = ${c}`,a:`x = ${x}`,w:[`x = ${x+1}`,`x = ${x-1}`,`x = ${c}`,`x = ${c-b}`]};}
+    if(t===3){const start=R(1,10),step=R(2,7);const seq=[start,start+step,start+2*step,start+3*step],ans=start+4*step;return{q:`What comes next?  ${seq.join(',  ')},  ___`,a:ans,w:[ans+1,ans-1,ans+step+1,ans-step]};}
+    const a=R(2,5),b=R(1,8),x=R(2,8),ans=a*x+b;return{q:`If x = ${x}, find the value of  ${a}x + ${b}`,a:ans,w:[ans+a,ans-a,a*x,ans+1]};
+  }
+  if(df===3){
+    // Hard: x on both sides, expand brackets, quadratic sequences, inequalities
+    if(t===0){const x=R(2,8),a=R(2,4),c=R(a+2,a+5),diff=(c-a)*x,b=R(1,diff-1),d=diff-b;return{q:`Solve:  ${a}x + ${b} = ${c}x − ${d}`,a:`x = ${x}`,w:[`x = ${x+1}`,`x = ${x-1}`,`x = ${b}`,`x = ${d}`].filter(v=>v!==`x = ${x}`)};}
+    if(t===1){const a=R(2,5),b=R(1,8);return{q:`Expand:  ${a}(x + ${b})`,a:`${a}x + ${a*b}`,w:[`${a}x + ${b}`,`${a+b}x`,`${a}x + ${a*b+1}`,`${a*b}x + ${b}`]};}
+    if(t===2){// quadratic sequence: n²+c
+      const c=R(1,8);const seq=[1+c,4+c,9+c,16+c];const ans=25+c;return{q:`What comes next in this quadratic sequence?  ${seq.join(', ')}, ___`,a:ans,w:[ans+1,ans-1,ans+c,ans+5]};}
+    if(t===3){const a=R(2,5),b=R(1,10),x=R(1,6),ans=a*x+b;return{q:`Solve:  ${a}x + ${b} = ${ans}  (find x)`,a:`x = ${x}`,w:[`x = ${x+1}`,`x = ${x-1}`,`x = ${ans}`,`x = ${b}`]};}
+    // inequality
+    const a=R(2,5),b=R(1,8),c=R(a*3+b,a*8+b);const xMin=Math.ceil((c-b)/a);return{q:`Solve the inequality:  ${a}x + ${b} > ${c}`,a:`x > ${xMin}`,w:[`x > ${xMin+1}`,`x > ${xMin-1}`,`x < ${xMin}`,`x ≥ ${xMin}`]};
+  }
+  // Genius: simultaneous equations, x², combined
+  if(t===0){const x=R(1,8),y=R(1,8),a=R(2,4),b=R(2,4);const eq1=a*x+y,eq2=b*x-y;return{q:`Solve simultaneously:\n${a}x + y = ${eq1}\n${b}x − y = ${eq2}`,a:`x = ${x}, y = ${y}`,w:[`x = ${x+1}, y = ${y}`,`x = ${x}, y = ${y+1}`,`x = ${y}, y = ${x}`,`x = ${x-1}, y = ${y+1}`]};}
+  if(t===1){const x=R(2,8),ans=x*x;return{q:`Solve:  x² = ${ans}`,a:`x = ±${x}`,w:[`x = ${x}`,`x = ${ans}`,`x = ±${x+1}`,`x = ±${x-1}`]};}
+  if(t===2){const a=R(1,4),b=R(-5,5),c=R(-10,10),x=R(1,6);const lhs=a*x*x+b*x+c;return{q:`If x = ${x}, evaluate:  ${a}x² ${b>=0?'+':'-'} ${Math.abs(b)}x ${c>=0?'+':'-'} ${Math.abs(c)}`,a:lhs,w:[lhs+a,lhs-b,a*x*x+c,lhs+1]};}
+  const start=R(3,10),step1=R(2,5),step2=R(1,3);const s=[start,start+step1,start+step1+step1+step2,start+step1+step1+step2+step1+2*step2];const ans=s[3]+step1+3*step2;
+  return{q:`Find the next term (quadratic sequence):  ${s.join(', ')}, ___`,a:ans,w:[ans+1,ans-1,ans+step2,ans-step2]};
+}
+
+function qStatistics(){
+  const df=difficulty,t=R(0,3);
+  if(df===1){
+    // Easy: mean of 3-4 small numbers, simple mode/range
+    if(t===0){const sets=[[[2,4,6],4],[[3,5,7],5],[[4,8,12],8],[[2,6,10],6],[[5,10,15],10],[[1,3,5],3]];const[nums,mean]=sets[R(0,sets.length-1)];return{q:`Find the mean of:  ${nums.join(', ')}`,a:mean,w:[mean+1,mean-1,mean+2,Math.max(...nums)]};}
+    if(t===1){const sets=[[[1,3,5,7,9],5],[[2,4,6,8,10],6],[[3,5,7,9,11],7],[[10,20,30],20]];const[nums,med]=sets[R(0,sets.length-1)];return{q:`Find the median of:  ${shuffle(nums).join(', ')}`,a:med,w:[med+1,med-1,Math.max(...nums),Math.min(...nums)]};}
+    if(t===2){const sets=[[[3,5,3,7,3],3],[[4,2,4,6,4],4],[[8,5,8,3,8],8]];const[nums,mode]=sets[R(0,sets.length-1)];return{q:`Find the mode of:  ${shuffle(nums).join(', ')}`,a:mode,w:nums.filter(n=>n!==mode).slice(0,3)};}
+    const a=R(2,10),b=R(a+2,a+10);return{q:`Find the range of:  ${a}, ${R(a+1,b-1)}, ${b}`,a:b-a,w:[b-a+1,b-a-1,b+a,b]};
+  }
+  if(df===2){
+    if(t===0){const sets=[[[4,8,6,2],5],[[10,14,12,8],11],[[3,7,5,9,6],6],[[12,8,10,14,16],12],[[4,6,8,10,12],8],[[5,9,7,11,3],7],[[2,6,4,8,10],6],[[15,5,10,20],12.5],[[6,2,4,8],5],[[9,3,6,12,15],9]];const[nums,mean]=sets[R(0,sets.length-1)];return{q:`Find the mean of:  ${nums.join(',  ')}`,a:mean,w:[mean+1,mean-1,mean+2,Math.max(...nums),Math.min(...nums)]};}
+    if(t===1){const sets=[[[3,7,1,9,5],5],[[12,4,8,14,6],8],[[2,8,5,11,3],5],[[15,9,3,12,6],9],[[20,4,12,8,16],12],[[1,5,3,9,7],5]];const[nums,med]=sets[R(0,sets.length-1)];return{q:`Find the median of:  ${shuffle(nums).join(',  ')}`,a:med,w:[med+1,med-1,med+2,Math.max(...nums),Math.min(...nums)]};}
+    if(t===2){const sets=[[[3,7,3,9,5,3],3],[[4,8,4,2,4,6],4],[[12,5,12,8,12,3],12],[[6,2,6,8,6,10],6],[[9,1,9,5,9,7],9],[[11,4,11,7,11,2],11]];const[nums,mode]=sets[R(0,sets.length-1)];return{q:`Find the mode of:  ${shuffle(nums).join(',  ')}`,a:mode,w:nums.filter(n=>n!==mode).slice(0,3).map(n=>n+(R(0,1)?0:1))};}
+    const nums=[];while(nums.length<5)nums.push(R(2,20));const range=Math.max(...nums)-Math.min(...nums);return{q:`Find the range of:  ${nums.join(',  ')}`,a:range,w:[range+1,range-1,range+2,Math.max(...nums)]};
+  }
+  if(df===3){
+    // Hard: find missing value from mean, simple probability
+    if(t===0){const known=[R(3,12),R(3,12),R(3,12),R(3,12)];const mean=R(5,12);const missing=mean*5-known.reduce((a,b)=>a+b,0);if(missing<1||missing>20)return qStatistics();return{q:`The mean of 5 numbers is ${mean}. Four of them are ${known.join(', ')}. Find the fifth.`,a:missing,w:[missing+1,missing-1,missing+2,mean]};}
+    if(t===1){const total=R(5,12);const fav=R(1,total-1);return{q:`A bag has ${total} balls. ${fav} are red. What is the probability of picking red?`,a:`${fav}/${total}`,w:[`${total-fav}/${total}`,`${fav}/${total-1}`,`${fav+1}/${total}`,`${fav}/${total+1}`]};}
+    if(t===2){// frequency table mean
+      const vals=[1,2,3,4,5];const freqs=vals.map(()=>R(1,5));const total=freqs.reduce((a,b)=>a+b,0);const sum=vals.reduce((s,v,i)=>s+v*freqs[i],0);const mean=(sum/total).toFixed(1);return{q:`Find the mean from this frequency table:\nValue: 1  2  3  4  5\nFreq:  ${freqs.join('  ')}`,a:mean,w:[(+mean+0.2).toFixed(1),(+mean-0.2).toFixed(1),(+mean+0.5).toFixed(1),(sum/vals.length).toFixed(1)].filter(x=>x!==mean)};}
+    const n=R(4,8);const nums=[];while(nums.length<n)nums.push(R(2,25));const sorted=[...nums].sort((a,b)=>a-b);const med=n%2===0?(sorted[n/2-1]+sorted[n/2])/2:sorted[Math.floor(n/2)];
+    return{q:`Find the median of:  ${shuffle(nums).join(', ')}`,a:med,w:[med+0.5,med-0.5,Math.max(...nums),nums[0]]};
+  }
+  // Genius: combined probability, outliers, IQR
+  if(t===0){const r=R(2,5),g=R(2,5),b=R(2,5),total=r+g+b;return{q:`A bag has ${r} red, ${g} green, ${b} blue balls. P(not red) = ?`,a:`${g+b}/${total}`,w:[`${r}/${total}`,`${g}/${total}`,`${g+b}/${total+1}`,`${r+g}/${total}`]};}
+  if(t===1){const nums=[R(5,12),R(5,12),R(5,12),R(5,12),R(5,12),R(5,12)].sort((a,b)=>a-b);const q1=nums[1],q3=nums[4],iqr=q3-q1;return{q:`For data: ${nums.join(', ')}\nQ1=${q1}, Q3=${q3}. Find the IQR.`,a:iqr,w:[iqr+1,iqr-1,q3,nums[nums.length-1]-nums[0]]};}
+  if(t===2){const p1=R(1,4),p2=R(1,4),total=10;const pBoth=p1*p2;return{q:`P(A) = ${p1}/10, P(B) = ${p2}/10, events independent. P(A and B) = ?`,a:`${pBoth}/100`,w:[`${p1+p2}/10`,`${pBoth+1}/100`,`${pBoth}/10`,`${p1*p2}/20`]};}
+  const mean=R(8,15),n=5,known=[R(5,mean),R(5,mean),R(mean,mean+5),R(mean,mean+5)];const missing=mean*n-known.reduce((a,b)=>a+b,0);if(missing<1||missing>30)return qStatistics();
+  return{q:`Mean of 5 values is ${mean}. Four values: ${known.join(', ')}. Find the fifth.`,a:missing,w:[missing+1,missing-1,missing+2,mean]};
+}
+
+function qWordProblems(){
+  const df=difficulty;
+  const easy=[
+    ()=>{const p=R(2,8),q=R(2,8),t=p*q;return{q:`Apples cost $${p} each. How much do ${q} apples cost?`,a:`$${t}`,w:[`$${t+p}`,`$${t-p}`,`$${p+q}`,`$${t+1}`]};},
+    ()=>{const tot=R(10,50),sp=R(2,tot-2),left=tot-sp;return{q:`Sam has $${tot} and spends $${sp}. How much is left?`,a:`$${left}`,w:[`$${left+1}`,`$${left-1}`,`$${left+5}`,`$${tot+sp}`]};},
+    ()=>{const ppd=R(2,6),days=R(3,7),tot=ppd*days;return{q:`Mia reads ${ppd} pages a day for ${days} days. How many pages total?`,a:`${tot}`,w:[tot+ppd,tot-ppd,ppd+days,tot+1]};},
+    ()=>{const ppl=R(2,5),each=R(2,8),tot=ppl*each;return{q:`${ppl} friends share $${tot} equally. How much each?`,a:`$${each}`,w:[`$${each+1}`,`$${each-1}`,`$${tot}`,`$${ppl}`]};},
+    ()=>{const bags=R(2,6),kg=R(1,4),tot=bags*kg;return{q:`Each bag weighs ${kg} kg. What is the total weight of ${bags} bags?`,a:`${tot} kg`,w:[`${tot+kg} kg`,`${tot-kg} kg`,`${bags+kg} kg`,`${tot+1} kg`]};},
+  ];
+  const medium=[
+    ()=>{const p=R(2,15),q=R(3,12),t=p*q;return{q:`Pens cost $${p} each. How much do ${q} pens cost?`,a:`$${t}`,w:[`$${t+p}`,`$${t-p}`,`$${p+q}`,`$${t+1}`]};},
+    ()=>{const tot=R(50,200),sp=R(10,tot-5),left=tot-sp;return{q:`Sam has $${tot} and spends $${sp}. How much is left?`,a:`$${left}`,w:[`$${left+1}`,`$${left-1}`,`$${left+10}`,`$${tot+sp}`]};},
+    ()=>{const ppd=R(3,8),days=R(4,10),tot=ppd*days;return{q:`Mia reads ${ppd} pages a day for ${days} days. How many pages total?`,a:`${tot}`,w:[tot+ppd,tot-ppd,ppd+days,tot+1]};},
+    ()=>{const ppl=R(3,8),each=R(5,20),tot=ppl*each;return{q:`${ppl} friends share $${tot} equally. How much each?`,a:`$${each}`,w:[`$${each+1}`,`$${each-1}`,`$${tot-each}`,`$${ppl+each}`]};},
+    ()=>{const l=R(5,20),w=R(3,12),area=l*w;return{q:`A garden is ${l} m long and ${w} m wide. What is its area?`,a:`${area} m²`,w:[`${2*(l+w)} m²`,`${area+l} m²`,`${area-w} m²`,`${l+w} m²`]};},
+    ()=>{const tot=R(100,400),p=[10,20,25,50][R(0,3)],disc=(tot*p)/100;return{q:`A store offers ${p}% off a $${tot} item. What is the discount?`,a:`$${disc}`,w:[`$${disc+10}`,`$${disc-10}`,`$${tot-disc}`,`$${disc*2}`]};},
+    ()=>{const km=R(4,15),spd=R(5,10)*10;return{q:`A car travels ${km} km at ${spd} km/h. How many minutes for the trip?`,a:`${(km/spd*60).toFixed(0)} min`,w:[`${(km/spd*60+5).toFixed(0)} min`,`${(km/spd*60-5).toFixed(0)} min`,`${km*spd} min`,`${km+spd} min`]};},
+    ()=>{const start=R(8,11),dur=R(1,3)*30;const end=start*60+R(0,1)*30+dur;const eh=Math.floor(end/60),em=end%60;return{q:`A show starts at ${start}:00 and runs for ${dur} minutes. When does it end?`,a:`${eh}:${em.toString().padStart(2,'0')}`,w:[`${eh+1}:${em.toString().padStart(2,'0')}`,`${eh}:${(em+10).toString().padStart(2,'0')}`,`${eh-1}:${em.toString().padStart(2,'0')}`,`${eh}:${(em+30).toString().padStart(2,'0')}`]};},
+    ()=>{const orig=R(6,16)*5,save=[5,10,15,20][R(0,3)];const final=orig-save;if(final<=0)return medium[0]();return{q:`A shirt originally costs $${orig}. After saving $${save}, what is the sale price?`,a:`$${final}`,w:[`$${final+5}`,`$${final-5}`,`$${orig+save}`,`$${save}`]};},
+  ];
+  const hard=[
+    ()=>{const orig=R(4,12)*20,pct=R(1,4)*10;const sale=orig*(1-pct/100);return{q:`A jacket costs $${orig}. It is reduced by ${pct}%. What is the sale price?`,a:`$${sale}`,w:[`$${sale+orig*pct/100}`,`$${orig-pct}`,`$${sale+10}`,`$${sale-10}`]};},
+    ()=>{const rate=R(60,100),hrs=R(2,8)+(R(0,1)?0.5:0);const ans=rate*hrs;return{q:`A plumber charges $${rate}/hour. A job takes ${hrs} hours. What is the total cost?`,a:`$${ans}`,w:[`$${ans+rate}`,`$${ans-rate/2}`,`$${rate+hrs}`,`$${ans+10}`]};},
+    ()=>{const dist=R(100,400),spd=R(60,120);const hrs=(dist/spd).toFixed(2);const hInt=Math.floor(dist/spd),hMin=Math.round((dist/spd-hInt)*60);if(hMin===0)return hard[1]();return{q:`A train travels ${dist} km at ${spd} km/h. How long does it take?`,a:`${hInt} h ${hMin} min`,w:[`${hInt+1} h ${hMin} min`,`${hInt} h ${hMin+10} min`,`${hInt} h ${hMin-5} min`,`${hInt-1} h ${hMin+15} min`]};},
+    ()=>{const a=R(3,8),b=R(3,8),tot=a+b;const pA=Math.round(a/tot*100);return{q:`Class A has ${a} boys and ${b} girls. What percentage are girls?`,a:`${Math.round(b/tot*100)}%`,w:[`${Math.round(b/tot*100)+5}%`,`${Math.round(a/tot*100)}%`,`${Math.round(b/tot*100)-5}%`,`${b}%`]};},
+    ()=>{const items=R(3,6),price=R(3,12),tax=10;const sub=items*price,taxAmt=sub*tax/100,total=sub+taxAmt;return{q:`${items} items at $${price} each with ${tax}% tax. What is the total?`,a:`$${total}`,w:[`$${sub}`,`$${total+taxAmt}`,`$${total-taxAmt}`,`$${total+price}`]};},
+  ];
+  const genius=[
+    ()=>{const p=R(4,10)*10,q=R(3,8);const orig=p*q;const disc=[10,20,50][R(0,2)];const final=orig*(1-disc/100);return{q:`${q} items at $${p} each, then ${disc}% off the total. Final cost?`,a:`$${final}`,w:[`$${orig}`,`$${final+p}`,`$${orig*disc/100}`,`$${final-p}`]};},
+    ()=>{const spd1=R(60,90),spd2=R(40,70),t1=R(1,3),t2=R(1,3);const d=spd1*t1+spd2*t2;return{q:`A car travels ${t1} h at ${spd1} km/h, then ${t2} h at ${spd2} km/h. Total distance?`,a:`${d} km`,w:[`${d+spd1} km`,`${d-spd2} km`,`${spd1+spd2} km`,`${d+t1*t2} km`]};},
+    ()=>{const ratio=[R(2,5),R(2,5)];const total=R(6,15)*(ratio[0]+ratio[1]);const a=total*ratio[0]/(ratio[0]+ratio[1]);const b=total-a;return{q:`$${total} is split in the ratio ${ratio[0]}:${ratio[1]}. What is the larger share?`,a:`$${Math.max(a,b)}`,w:[`$${Math.min(a,b)}`,`$${Math.max(a,b)+ratio[0]}`,`$${total/2}`,`$${Math.max(a,b)-ratio[1]}`]};},
+    ()=>{const wkly=R(300,800),taxFree=200,rate=R(15,30);const taxable=wkly-taxFree,tax=Math.round(taxable*rate/100),take=wkly-tax;return{q:`Weekly wage $${wkly}. First $${taxFree} tax-free, rest taxed at ${rate}%. Take-home pay?`,a:`$${take}`,w:[`$${take+tax}`,`$${take-50}`,`$${wkly-taxFree*rate/100}`,`$${take+10}`]};},
+    ()=>{const n=R(3,6),each=R(4,10),extra=R(1,3);const ans=(n+extra)*each;return{q:`A recipe for ${n} people needs ${each} cups of flour. How much for ${n+extra} people?`,a:`${ans} cups`,w:[`${n*each+extra} cups`,`${ans+each} cups`,`${ans-each} cups`,`${(n+extra)*each+1} cups`]};},
+  ];
+  const pool=df===1?easy:df===2?medium:df===3?hard:genius;
+  return pool[R(0,pool.length-1)]();
+}
+
+// ── Topic registry ───────────────────────────────────────────────────────────
+const TOPICS=[
+  {id:'addsub',    name:'Addition & Subtraction',        icon:'➕', color:'#ef4444', gen:qAddSub},
+  {id:'multdiv',   name:'Multiplication & Division',     icon:'✖️',  color:'#f97316', gen:qMultDiv},
+  {id:'fractions', name:'Fractions',                     icon:'½',   color:'#8b5cf6', gen:qFractions},
+  {id:'decimals',  name:'Decimals & Percentages',        icon:'%',   color:'#06b6d4', gen:qDecimals},
+  {id:'integers',  name:'Positive & Negative Numbers',   icon:'±',   color:'#14b8a6', gen:qIntegers},
+  {id:'geometry',  name:'Area & Perimeter',              icon:'📐',  color:'#10b981', gen:qGeometry},
+  {id:'angles',    name:'Angles',                        icon:'📏',  color:'#f59e0b', gen:qAngles},
+  {id:'algebra',   name:'Basic Algebra',                 icon:'𝑥',   color:'#6366f1', gen:qAlgebra},
+  {id:'stats',     name:'Statistics',                    icon:'📊',  color:'#ec4899', gen:qStatistics},
+  {id:'word',      name:'Word Problems',                 icon:'💬',  color:'#0ea5e9', gen:qWordProblems},
+];
+
+// ── State ────────────────────────────────────────────────────────────────────
+let topic=null, questions=[], qi=0, score=0, answered=false, results=[];
+
+// ── High scores ──────────────────────────────────────────────────────────────
+function hsKey(tid){return `${tid}_d${difficulty}`;}
+function getHS(){try{return JSON.parse(localStorage.getItem('mathHS')||'{}')}catch{return{}}}
+function saveHS(tid,s){const k=hsKey(tid),h=getHS(),prev=h[k]||0;if(s>prev){h[k]=s;localStorage.setItem('mathHS',JSON.stringify(h));return true;}return false;}
+function stars(s){return s>=9?'⭐⭐⭐':s>=7?'⭐⭐':s>=5?'⭐':''}
+
+// ── Difficulty bar ────────────────────────────────────────────────────────────
+function renderDiffBar(){
+  document.getElementById('diffBar').innerHTML=DIFFICULTIES.map(d=>
+    `<button class="diff-btn${d.id===difficulty?' active':''}"
+      style="${d.id===difficulty?`background:${d.color}`:''}"
+      onclick="setDifficulty(${d.id})">${d.name}</button>`
+  ).join('');
+}
+function setDifficulty(id){
+  difficulty=id;
+  renderDiffBar();
+  renderHome();
+}
+
+// ── Home ──────────────────────────────────────────────────────────────────────
+function renderHome(){
+  renderDiffBar();
+  const hs=getHS();
+  document.getElementById('topicGrid').innerHTML=TOPICS.map(t=>{
+    const b=hs[hsKey(t.id)];
+    const bestTxt=b!=null?`${stars(b)} Best: ${b}/10`:'Not played yet';
+    return `<div class="topic-card" onclick="startQuiz('${t.id}')" style="border-top-color:${t.color}">
+      <span class="icon">${t.icon}</span>
+      <div class="name">${t.name}</div>
+      <div class="best">${bestTxt}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Build question ────────────────────────────────────────────────────────────
+function buildQ(raw){
+  const answer=String(raw.a);
+  const options=raw.opts||makeOpts(answer,raw.w||[]);
+  return {question:raw.q, answer, options, diagram:raw.d||null};
+}
+
+// ── Quiz ──────────────────────────────────────────────────────────────────────
+function startQuiz(id){
+  topic=TOPICS.find(t=>t.id===id);
+  questions=[];results=[];qi=0;score=0;answered=false;
+  const seen=new Set();
+  for(let i=0;i<10;i++){
+    let q=null,tries=0;
+    do{
+      try{
+        const built=buildQ(topic.gen());
+        if(!seen.has(built.question)){q=built;seen.add(built.question);}
+      }catch(e){}
+      tries++;
+    }while(!q&&tries<25);
+    questions.push(q||{question:'3 × 4 = ?',answer:'12',options:['12','11','13','14'],diagram:null});
+  }
+  showScreen('quiz');renderQ();
+}
+
+function renderQ(){
+  const q=questions[qi];
+  const dname=DIFFICULTIES.find(d=>d.id===difficulty).name;
+  document.getElementById('badge').textContent=`${topic.name} · ${dname}`;
+  document.getElementById('badge').style.background=topic.color;
+  document.getElementById('scorelabel').textContent=`${score} / ${qi}`;
+  document.getElementById('qnum').textContent=`Question ${qi+1} of 10`;
+  document.getElementById('qtext').textContent=q.question;
+  const diagramEl=document.getElementById('diagram');
+  if(q.diagram){diagramEl.innerHTML=q.diagram;diagramEl.classList.remove('hidden');}
+  else{diagramEl.innerHTML='';diagramEl.classList.add('hidden');}
+  document.getElementById('progBar').style.width=`${qi*10}%`;
+
+  const opts=document.getElementById('opts');
+  opts.innerHTML='';
+  q.options.forEach(opt=>{
+    const btn=document.createElement('button');
+    btn.className='opt-btn';
+    btn.textContent=opt;
+    btn.dataset.val=opt;
+    btn.addEventListener('click',()=>pick(btn,q));
+    opts.appendChild(btn);
+  });
+
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').className='feedback';
+  const nb=document.getElementById('nextBtn');
+  nb.classList.remove('show');
+  nb.textContent=qi===9?'See Results →':'Next Question →';
+  answered=false;
+}
+
+function pick(btn,q){
+  if(answered)return;
+  answered=true;
+  const correct=btn.dataset.val===q.answer;
+  if(correct)score++;
+  results.push({question:q.question,answer:q.answer,chosen:btn.dataset.val,correct});
+
+  document.querySelectorAll('.opt-btn').forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.val===q.answer)b.classList.add('correct');
+    else if(b===btn&&!correct)b.classList.add('wrong');
+  });
+
+  const fb=document.getElementById('feedback');
+  if(correct){
+    const msgs=['Correct!','Nice work!','Well done!','Brilliant!','Spot on!','Excellent!','Yes!'];
+    fb.textContent=msgs[R(0,msgs.length-1)];fb.className='feedback ok';
+  } else {
+    fb.textContent=`Not quite — the answer is ${q.answer}`;fb.className='feedback no';
+  }
+  document.getElementById('scorelabel').textContent=`${score} / ${qi+1}`;
+  document.getElementById('nextBtn').classList.add('show');
+}
+
+function nextQ(){qi++;if(qi>=10)showResults();else renderQ();}
+
+// ── Results ───────────────────────────────────────────────────────────────────
+function getResultMsg(s){
+  if(s===10)return'Perfect score! You are a maths superstar!';
+  if(s>=9)return'Outstanding! Nearly perfect!';
+  if(s>=7)return'Great work! You really know your stuff!';
+  if(s>=5)return'Good effort! Keep practising and you\'ll get there!';
+  if(s>=3)return'Keep going — practice makes perfect!';
+  return'Don\'t give up! Have another go!';
+}
+
+function showResults(){
+  showScreen('results');
+  const isNew=saveHS(topic.id,score);
+  const dname=DIFFICULTIES.find(d=>d.id===difficulty).name;
+
+  document.getElementById('resTitle').textContent=score>=7?'Well done!':'Quiz complete!';
+  document.getElementById('resSub').textContent=`${topic.name} — ${dname}`;
+  document.getElementById('finalScore').textContent=score;
+  document.getElementById('stars').textContent=score>=9?'⭐⭐⭐':score>=7?'⭐⭐':score>=5?'⭐':'💪';
+  document.getElementById('resMsg').textContent=getResultMsg(score);
+  const nb=document.getElementById('newBest');
+  nb.style.display=(isNew&&score>0)?'block':'none';
+
+  // Breakdown
+  const bd=document.getElementById('breakdown');
+  bd.innerHTML=`<h3>Question Review</h3>`+results.map((r,i)=>`
+    <div class="q-row">
+      <span class="q-icon">${r.correct?'✅':'❌'}</span>
+      <div class="q-detail">
+        <strong>${r.question}</strong>
+        <span>${r.correct?`Correct: ${r.answer}`:`Your answer: ${r.chosen} &nbsp;&bull;&nbsp; Correct: ${r.answer}`}</span>
+      </div>
+    </div>`).join('');
+
+  if(score>=8)launchConfetti();
+}
+
+function retry(){startQuiz(topic.id);}
+function showHome(){showScreen('home');renderHome();}
+
+// ── Confetti ──────────────────────────────────────────────────────────────────
+function launchConfetti(){
+  const wrap=document.getElementById('confettiWrap');
+  wrap.innerHTML='';
+  const colors=['#6366f1','#f97316','#22c55e','#ef4444','#f59e0b','#ec4899','#06b6d4'];
+  for(let i=0;i<60;i++){
+    const c=document.createElement('div');
+    c.className='conf';
+    c.style.cssText=`left:${R(0,100)}%;background:${colors[R(0,colors.length-1)]};
+      animation-duration:${R(15,30)/10}s;animation-delay:${R(0,20)/10}s;
+      width:${R(6,12)}px;height:${R(6,12)}px;border-radius:${R(0,1)?'50%':'2px'}`;
+    wrap.appendChild(c);
+  }
+  setTimeout(()=>wrap.innerHTML='',4000);
+}
+
+// ── Screen management ─────────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+const VERSION='v24.05.2026.2041';
+document.getElementById('version').textContent=VERSION;
+renderHome();
+</script>
+</body>
+</html>
