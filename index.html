@@ -760,7 +760,8 @@ function startQuiz(id){
     do{
       try{
         const built=buildQ(topic.gen());
-        if(!seen.has(built.question)){q=built;seen.add(built.question);}
+        const key=built.question+'|'+built.answer;
+        if(!seen.has(key)){q=built;seen.add(key);}
       }catch(e){}
       tries++;
     }while(!q&&tries<25);
@@ -891,7 +892,7 @@ function showScreen(id){
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
-const VERSION='v24.05.2026.2041';
+const VERSION='v24.05.2026.2137';
 document.getElementById('version').textContent=VERSION;
 renderHome();
 </script>
